@@ -43,16 +43,22 @@ namespace dxvk::hud {
     
     std::array<float, NumDataPoints>  m_dataPoints  = {};
     uint32_t                          m_dataPointId = 0;
+
+    HudPos renderGpuText(
+      const Rc<DxvkContext>&  context,
+      HudRenderer&      renderer,
+      HudPos            position);
+      
+    HudPos renderCpuText(
+      const Rc<DxvkContext>&  context,
+            HudRenderer&      renderer,
+            HudPos            position);
     
     HudPos renderFpsText(
       const Rc<DxvkContext>&  context,
             HudRenderer&      renderer,
             HudPos            position);
     
-    HudPos renderGpuText(
-      const Rc<DxvkContext>&  context,
-            HudRenderer&      renderer,
-            HudPos            position);
     
     HudPos renderFrametimeGraph(
       const Rc<DxvkContext>&  context,
