@@ -17,6 +17,7 @@ namespace dxvk::hud {
     { "api",          HudElement::DxvkClientApi     },
     { "compiler",     HudElement::CompilerActivity  },
     { "mangogpuload", HudElement::GpuLoad           },
+    { "mangocpuload", HudElement::CpuLoad           },
   }};
   
   
