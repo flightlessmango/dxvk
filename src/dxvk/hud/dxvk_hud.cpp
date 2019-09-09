@@ -84,7 +84,16 @@ namespace dxvk::hud {
 
 
   void Hud::renderHudElements(const Rc<DxvkContext>& ctx) {
-    HudPos position = { 8.0f, 24.0f };
+    std::string offset_x = env::getEnvVar("DXVK_HUD_OFFSET_X");
+    std::string offset_y = env::getEnvVar("DXVK_HUD_OFFSET_Y");
+    
+    if (offset_x.empty())
+     offset_x = "0";
+     
+    if (offset_y.empty())
+    offset_y = "0";
+    
+    HudPos position = { stof(offset_x) + 8.0f, stof(offset_y) + 24.0f };
     
     if (m_config.elements.test(HudElement::DxvkVersion)) {
       m_renderer.drawText(ctx, 16.0f,
