@@ -49,6 +49,11 @@ namespace dxvk::hud {
             HudRenderer&      renderer,
             HudPos            position);
     
+    HudPos renderGpuText(
+      const Rc<DxvkContext>&  context,
+            HudRenderer&      renderer,
+            HudPos            position);
+    
     HudPos renderFrametimeGraph(
       const Rc<DxvkContext>&  context,
             HudRenderer&      renderer,
