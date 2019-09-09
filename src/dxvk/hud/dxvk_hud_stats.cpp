@@ -1,5 +1,6 @@
 #include "dxvk_hud_stats.h"
 
+std::string m_gpuLoadString = "GPU: ";
 namespace dxvk::hud {
   
   HudStats::HudStats(HudElements elements)
@@ -24,7 +25,7 @@ namespace dxvk::hud {
 
     // GPU load is a bit more complex than that since
     // we don't want to update this every frame
-    if (m_elements.test(HudElement::StatGpuLoad))
+    if (m_elements.test(HudElement::GpuLoad) || m_elements.test(HudElement::StatGpuLoad))
       this->updateGpuLoad();
   }
   
@@ -71,7 +72,7 @@ namespace dxvk::hud {
         ? uint64_t(ticks - m_diffGpuIdleTicks)
         : uint64_t(0);
 
-      m_gpuLoadString = str::format("GPU: ", (100 * busyTicks) / ticks, "%");
+      m_gpuLoadString = str::format("GPU:   ", (100 * busyTicks) / ticks, "%");
     }
   }
 
@@ -224,7 +225,8 @@ namespace dxvk::hud {
       HudElement::StatPipelines,
       HudElement::StatMemory,
       HudElement::StatGpuLoad,
-      HudElement::CompilerActivity);
+      HudElement::CompilerActivity,
+      HudElement::GpuLoad);
   }
   
 }

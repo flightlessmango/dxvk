@@ -7,6 +7,7 @@
 #include "dxvk_hud_config.h"
 #include "dxvk_hud_renderer.h"
 
+extern std::string m_gpuLoadString;
 namespace dxvk::hud {
   
   /**
@@ -44,8 +45,6 @@ namespace dxvk::hud {
     uint64_t m_prevGpuIdleTicks = 0;
     uint64_t m_diffGpuIdleTicks = 0;
     
-    std::string m_gpuLoadString = "GPU: ";
-
     void updateGpuLoad();
     
     HudPos printDrawCallStats(

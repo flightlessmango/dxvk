@@ -1,4 +1,5 @@
 #include "dxvk_hud_fps.h"
+#include "dxvk_hud_stats.h"
 
 #include <cmath>
 #include <iomanip>
@@ -50,6 +51,10 @@ namespace dxvk::hud {
       position = this->renderFpsText(
         context, renderer, position);
     }
+    if (m_elements.test(HudElement::GpuLoad)) {
+      position = this->renderGpuText(
+        context, renderer, position);
+    }
     
     if (m_elements.test(HudElement::Frametimes)) {
       position = this->renderFrametimeGraph(
@@ -72,6 +77,17 @@ namespace dxvk::hud {
     return HudPos { position.x, position.y + 24 };
   }
   
+  HudPos HudFps::renderGpuText(
+  const Rc<DxvkContext>&  context,
+        HudRenderer&      renderer,
+        HudPos            position) {
+  renderer.drawText(context, 16.0f,
+    { position.x, position.y },
+    { 1.0f, 1.0f, 1.0f, 1.0f },
+    m_gpuLoadString);
+
+  return HudPos { position.x, position.y + 24 };
+}  
   
   HudPos HudFps::renderFrametimeGraph(
     const Rc<DxvkContext>&  context,
