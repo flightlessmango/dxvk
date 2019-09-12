@@ -175,6 +175,11 @@ int getCpuUsage()
 	return 0;
 }
 
+void printToLog(std::string file, string m_fpsString, string cpuUtil, string gpuUtil) {
+  fstream f(file, f.out | f.app);
+  f << m_fpsString << "," << cpuUtil << "," << gpuUtil << endl;
+}
+
 namespace dxvk::hud {
   
   HudFps::HudFps(HudElements elements)
@@ -210,6 +215,10 @@ namespace dxvk::hud {
       
       m_prevFpsUpdate = now;
       m_frameCount = 0;
+      char const* logging = getenv("DXVK_LOG_TO_FILE");
+      if (!logging == 0){
+        printToLog(logging, str::format(fps / 10, ".", fps % 10), str::format(cpuArray[0].value), to_string(gpuLoad));
+      }
     }
     
     // Update frametime stuff

@@ -1,6 +1,7 @@
 #include "dxvk_hud_stats.h"
 
 std::string m_gpuLoadString = "GPU: ";
+uint64_t gpuLoad;
 namespace dxvk::hud {
   
   HudStats::HudStats(HudElements elements)
@@ -71,7 +72,7 @@ namespace dxvk::hud {
       uint64_t busyTicks = ticks > m_diffGpuIdleTicks
         ? uint64_t(ticks - m_diffGpuIdleTicks)
         : uint64_t(0);
-
+      gpuLoad = 100 * busyTicks / ticks;
       m_gpuLoadString = str::format("GPU:   ", (100 * busyTicks) / ticks, "%");
     }
   }

@@ -8,6 +8,7 @@
 #include "dxvk_hud_renderer.h"
 
 extern std::string m_gpuLoadString;
+extern uint64_t gpuLoad;
 namespace dxvk::hud {
   
   /**
