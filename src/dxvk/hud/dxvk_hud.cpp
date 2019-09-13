@@ -2,6 +2,8 @@
 #include <version.h>
 
 #include "dxvk_hud.h"
+float offset_x_float = 0.0;
+float offset_y_float = 0.0;
 
 namespace dxvk::hud {
   
@@ -60,6 +62,14 @@ namespace dxvk::hud {
   
   Rc<Hud> Hud::createHud(const Rc<DxvkDevice>& device) {
     std::string hudElements = env::getEnvVar("DXVK_HUD");
+    std::string offset_x = env::getEnvVar("DXVK_HUD_OFFSET_X");
+    std::string offset_y = env::getEnvVar("DXVK_HUD_OFFSET_Y");
+    
+    if (!offset_x.empty())
+      offset_x_float = stof(offset_x);
+    
+    if (!offset_y.empty())
+      offset_y_float = stof(offset_y);
 
     if (hudElements.empty())
       hudElements = device->config().hud;
@@ -84,16 +94,8 @@ namespace dxvk::hud {
 
 
   void Hud::renderHudElements(const Rc<DxvkContext>& ctx) {
-    std::string offset_x = env::getEnvVar("DXVK_HUD_OFFSET_X");
-    std::string offset_y = env::getEnvVar("DXVK_HUD_OFFSET_Y");
-    
-    if (offset_x.empty())
-     offset_x = "0";
-     
-    if (offset_y.empty())
-    offset_y = "0";
-    
-    HudPos position = { stof(offset_x) + 8.0f, stof(offset_y) + 24.0f };
+
+    HudPos position = { offset_x_float + 8.0f, offset_y_float + 24.0f };
     
     if (m_config.elements.test(HudElement::DxvkVersion)) {
       m_renderer.drawText(ctx, 16.0f,
