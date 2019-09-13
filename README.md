@@ -1,3 +1,14 @@
+# MangoHud Specific
+
+- `DXVK_HUD_OFFSET_X` Set X offset of the DVXK Hud.
+- `DXVK_HUD_OFFSET_Y` Set Y offset of the DVXK Hud.
+- `DXVK_LOG_TO_FILE` Turn on logging and select path/filename (Fps,Cpu load,Gpu load)
+- Logging Gpu load requires either mangogpuload or gpuload hud options
+
+# Hud options
+- `mangogpuload` : Shows current gpu load.
+- `mangocpuload` : Shows current cpu load.
+
 # DXVK
 
 A Vulkan-based translation layer for Direct3D 10/11 which allows running 3D applications on Linux using Wine.
