@@ -29,6 +29,8 @@ namespace dxvk::hud {
   class Hud : public RcObject {
     
   public:
+    static float offset_x_float;
+    static float offset_y_float;
     
     Hud(
       const Rc<DxvkDevice>& device,
