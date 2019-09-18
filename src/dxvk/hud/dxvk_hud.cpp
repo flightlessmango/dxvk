@@ -1,11 +1,13 @@
-#include <cstring>
 #include <version.h>
-
 #include "dxvk_hud.h"
-float offset_x_float = 0.0;
-float offset_y_float = 0.0;
+#include <windows.h>
+#include <time.h>
 
 namespace dxvk::hud {
+  float Hud::offset_x_float = 0;
+  float Hud::offset_y_float = 0;
+  bool show_hud = true;
+  time_t lastPress;
   
   Hud::Hud(
     const Rc<DxvkDevice>& device,
@@ -92,34 +94,46 @@ namespace dxvk::hud {
     m_renderer.beginFrame(ctx, m_uniformData.surfaceSize);
   }
 
-
   void Hud::renderHudElements(const Rc<DxvkContext>& ctx) {
-
+    if(GetKeyState(VK_F12) & 0x8000)
+    {
+      if (time(0) - lastPress > 0){
+        lastPress = time(0);
+        std::cout << "pressed F12" << std::endl;
+        if (show_hud){
+          show_hud = false;
+        } else {
+          show_hud = true;
+        }
+      }
+    } 
+    
     HudPos position = { offset_x_float + 8.0f, offset_y_float + 24.0f };
     
-    if (m_config.elements.test(HudElement::DxvkVersion)) {
-      m_renderer.drawText(ctx, 16.0f,
-        { position.x, position.y },
-        { 1.0f, 1.0f, 1.0f, 1.0f },
-        "DXVK " DXVK_VERSION);
-      position.y += 24.0f;
-    }
+    if (show_hud){
+      if (m_config.elements.test(HudElement::DxvkVersion)) {
+        m_renderer.drawText(ctx, 16.0f,
+          { position.x, position.y },
+          { 1.0f, 1.0f, 1.0f, 1.0f },
+          "DXVK " DXVK_VERSION);
+        position.y += 24.0f;
+      }
 
-    if (m_config.elements.test(HudElement::DxvkClientApi)) {
-      m_renderer.drawText(ctx, 16.0f,
-        { position.x, position.y },
-        { 1.0f, 1.0f, 1.0f, 1.0f },
-        m_device->clientApi());
-      position.y += 24.0f;
-    }
+      if (m_config.elements.test(HudElement::DxvkClientApi)) {
+        m_renderer.drawText(ctx, 16.0f,
+          { position.x, position.y },
+          { 1.0f, 1.0f, 1.0f, 1.0f },
+          m_device->clientApi());
+        position.y += 24.0f;
+      }
 
-    if (m_config.elements.test(HudElement::DeviceInfo)) {
-      position = m_hudDeviceInfo.render(
-        ctx, m_renderer, position);
+      if (m_config.elements.test(HudElement::DeviceInfo)) {
+        position = m_hudDeviceInfo.render(
+          ctx, m_renderer, position);
+      }
+      position = m_hudFramerate.render(ctx, m_renderer, position);
+      position = m_hudStats    .render(ctx, m_renderer, position);
     }
-    
-    position = m_hudFramerate.render(ctx, m_renderer, position);
-    position = m_hudStats    .render(ctx, m_renderer, position);
   }
   
   
