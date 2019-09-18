@@ -99,7 +99,6 @@ namespace dxvk::hud {
     {
       if (time(0) - lastPress > 0){
         lastPress = time(0);
-        std::cout << "pressed F12" << std::endl;
         if (show_hud){
           show_hud = false;
         } else {
