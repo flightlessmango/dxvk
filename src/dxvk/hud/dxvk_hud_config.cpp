@@ -18,6 +18,7 @@ namespace dxvk::hud {
     { "compiler",     HudElement::CompilerActivity  },
     { "mangogpuload", HudElement::GpuLoad           },
     { "mangocpuload", HudElement::CpuLoad           },
+    { "mangocpuload", HudElement::Logging           },
   }};
   
   
