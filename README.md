@@ -9,6 +9,21 @@
 - `mangogpuload` : Shows current gpu load.
 - `mangocpuload` : Shows current cpu load.
 
+# Keybinds
+- `F2`  : Toggle Logging on/off
+- `F12` : Toggle Hud on/off
+
+# MangoLog file
+
+ When you press F2, a file is created with your chosen name + date/time stamp.
+ this file can be uploaded to https://flightlessmango.com/logs/new to create graphs automatically.
+ you can share the created page with others, just link it.
+ 
+ #### Multiple log files
+ 
+ It's possible to upload multiple files, you can rename them to your preferred names and upload them in a batch.
+ The graphs will then use those names in the data.
+
 # DXVK
 
 A Vulkan-based translation layer for Direct3D 10/11 which allows running 3D applications on Linux using Wine.
