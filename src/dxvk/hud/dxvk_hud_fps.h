@@ -36,9 +36,14 @@ namespace dxvk::hud {
     const HudElements m_elements;
     
     std::string m_fpsString;
+    bool mango_logging = false;
+    bool startCounting = false;
+    time_t lastPress = time(0);
     
     TimePoint m_prevFpsUpdate;
     TimePoint m_prevFtgUpdate;
+    TimePoint m_prevF2Press;
+    TimeDiff  elapsedF2;
     int64_t   m_frameCount = 0;
     
     std::array<float, NumDataPoints>  m_dataPoints  = {};
@@ -61,6 +66,11 @@ namespace dxvk::hud {
     
     
     HudPos renderFrametimeGraph(
+      const Rc<DxvkContext>&  context,
+            HudRenderer&      renderer,
+            HudPos            position);
+            
+    HudPos renderLogging(
       const Rc<DxvkContext>&  context,
             HudRenderer&      renderer,
             HudPos            position);

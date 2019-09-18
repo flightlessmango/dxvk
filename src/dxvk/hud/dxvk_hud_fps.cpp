@@ -1,14 +1,17 @@
 #include "dxvk_hud_fps.h"
 #include "dxvk_hud_stats.h"
 #include "../dxvk_cpu.h"
+#include <time.h>
 
 #include <cmath>
 #include <iomanip>
 using namespace std;
+time_t now_log = time(0);
+tm *log_time = localtime(&now_log);
 
-
-void printToLog(std::string file, string m_fpsString, string cpuUtil, string gpuUtil) {
-  fstream f(file, f.out | f.app);
+void printToLog(std::string file, string m_fpsString, string cpuUtil, string gpuUtil, tm *log_time) {
+  string date = to_string(log_time->tm_year + 1900) + "-" + to_string(1 + log_time->tm_mon) + "-" + to_string(log_time->tm_mday) + "_" + to_string(1 + log_time->tm_hour) + "-" + to_string(1 + log_time->tm_min) + "-" + to_string(1 + log_time->tm_sec);
+  fstream f(file + "_" + date, f.out | f.app);
   f << m_fpsString << "," << cpuUtil << "," << gpuUtil << endl;
 }
 
@@ -33,10 +36,35 @@ namespace dxvk::hud {
     TimePoint now = Clock::now();
     TimeDiff elapsedFps = std::chrono::duration_cast<TimeDiff>(now - m_prevFpsUpdate);
     TimeDiff elapsedFtg = std::chrono::duration_cast<TimeDiff>(now - m_prevFtgUpdate);
+    if (startCounting){
+      elapsedF2  = std::chrono::duration_cast<TimeDiff>(now - m_prevF2Press);
+    }
     m_prevFtgUpdate = now;
-    
-    // Update FPS string
+
+    if (elapsedF2.count() > UpdateInterval){
+      startCounting = false;
+    }
+
+    if(GetKeyState(VK_F2) & 0x8000)
+    {
+      if (elapsedF2.count() > UpdateInterval) {
+          if (mango_logging){
+            m_prevF2Press = now;
+            now_log = time(0);
+            log_time = localtime(&now_log);
+            startCounting = true;
+            mango_logging = false;
+          } else {
+            m_prevF2Press = now;
+            now_log = time(0);
+            log_time = localtime(&now_log);
+            startCounting = true;
+            mango_logging = true;
+          }
+      } 
+    }
     if (elapsedFps.count() >= UpdateInterval) {
+    // Update FPS string
       coreCounting();
       dxvk::thread([this] () { getCpuUsage();});
       updateCpuStrings();
@@ -48,7 +76,9 @@ namespace dxvk::hud {
       m_frameCount = 0;
       char const* logging = getenv("DXVK_LOG_TO_FILE");
       if (!logging == 0){
-        printToLog(logging, str::format(fps / 10, ".", fps % 10), str::format(cpuArray[0].value), to_string(gpuLoad));
+        if (mango_logging){
+          printToLog(logging, str::format(fps / 10, ".", fps % 10), str::format(cpuArray[0].value), to_string(gpuLoad), log_time);
+        }
       }
     }
     
@@ -80,6 +110,11 @@ namespace dxvk::hud {
         context, renderer, position);
     }
     
+    if (mango_logging) {
+      this->renderLogging(context, renderer,
+        { float(renderer.surfaceSize().width) - 250.0f, float(renderer.surfaceSize().height) - 20.0f });
+    }
+    
     return position;
   }
   
@@ -95,7 +130,7 @@ namespace dxvk::hud {
     m_gpuLoadString);
 
   return HudPos { position.x, position.y + 24 };
-}  
+}
 
 HudPos HudFps::renderCpuText(
 const Rc<DxvkContext>&  context,
@@ -120,6 +155,18 @@ HudPos HudFps::renderFpsText(
       
       return HudPos { position.x, position.y + 24 };
     }
+    
+  HudPos HudFps::renderLogging(
+    const Rc<DxvkContext>&  context,
+    HudRenderer&      renderer,
+    HudPos            position) {
+      renderer.drawText(context, 16.0f,
+        { position.x, position.y },
+        { 1.0f, 1.0f, 1.0f, 1.0f },
+        "Currently Logging...");
+        
+        return HudPos { position.x, position.y};
+      }
   
   HudPos HudFps::renderFrametimeGraph(
     const Rc<DxvkContext>&  context,

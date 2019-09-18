@@ -24,6 +24,7 @@ namespace dxvk::hud {
     CompilerActivity  = 10,
     GpuLoad           = 11,
     CpuLoad           = 12,
+    Logging           = 13,
   };
   
   using HudElements = Flags<HudElement>;
