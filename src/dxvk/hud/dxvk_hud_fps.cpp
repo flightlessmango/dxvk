@@ -74,7 +74,7 @@ namespace dxvk::hud {
       
       m_prevFpsUpdate = now;
       m_frameCount = 0;
-      char const* logging = getenv("DXVK_LOG_TO_FILE");
+      logging = getenv("DXVK_LOG_TO_FILE");
       if (!logging == 0){
         if (mango_logging){
           printToLog(logging, str::format(fps / 10, ".", fps % 10), str::format(cpuArray[0].value), to_string(gpuLoad), log_time);
@@ -110,7 +110,7 @@ namespace dxvk::hud {
         context, renderer, position);
     }
     
-    if (mango_logging) {
+    if (mango_logging && !logging == 0) {
       this->renderLogging(context, renderer,
         { float(renderer.surfaceSize().width) - 250.0f, float(renderer.surfaceSize().height) - 20.0f });
     }

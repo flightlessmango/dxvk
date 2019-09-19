@@ -39,6 +39,7 @@ namespace dxvk::hud {
     bool mango_logging = false;
     bool startCounting = false;
     time_t lastPress = time(0);
+    char const* logging;
     
     TimePoint m_prevFpsUpdate;
     TimePoint m_prevFtgUpdate;
