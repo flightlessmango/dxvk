@@ -45,7 +45,7 @@ namespace dxvk::hud {
       startCounting = false;
     }
 
-    if(GetKeyState(VK_F2) & 0x8000)
+    if(GetAsyncKeyState(VK_F2) & 0x8000)
     {
       if (elapsedF2.count() > UpdateInterval || elapsedF2.count() == 0) {
           if (mango_logging){
