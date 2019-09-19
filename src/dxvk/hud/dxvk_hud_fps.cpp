@@ -47,7 +47,7 @@ namespace dxvk::hud {
 
     if(GetKeyState(VK_F2) & 0x8000)
     {
-      if (elapsedF2.count() > UpdateInterval) {
+      if (elapsedF2.count() > UpdateInterval || elapsedF2.count() == 0) {
           if (mango_logging){
             m_prevF2Press = now;
             now_log = time(0);
