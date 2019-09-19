@@ -95,7 +95,7 @@ namespace dxvk::hud {
   }
 
   void Hud::renderHudElements(const Rc<DxvkContext>& ctx) {
-    if(GetKeyState(VK_F12) & 0x8000)
+    if(GetAsyncKeyState(VK_F12) & 0x8000)
     {
       if (time(0) - lastPress > 0){
         lastPress = time(0);
