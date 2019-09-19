@@ -36,29 +36,19 @@ namespace dxvk::hud {
     TimePoint now = Clock::now();
     TimeDiff elapsedFps = std::chrono::duration_cast<TimeDiff>(now - m_prevFpsUpdate);
     TimeDiff elapsedFtg = std::chrono::duration_cast<TimeDiff>(now - m_prevFtgUpdate);
-    if (startCounting){
-      elapsedF2  = std::chrono::duration_cast<TimeDiff>(now - m_prevF2Press);
-    }
     m_prevFtgUpdate = now;
-
-    if (elapsedF2.count() > UpdateInterval){
-      startCounting = false;
-    }
 
     if(GetAsyncKeyState(VK_F2) & 0x8000)
     {
+      elapsedF2 = std::chrono::duration_cast<TimeDiff>(now - m_prevF2Press);
       if (elapsedF2.count() > UpdateInterval || elapsedF2.count() == 0) {
           if (mango_logging){
             m_prevF2Press = now;
-            now_log = time(0);
-            log_time = localtime(&now_log);
-            startCounting = true;
             mango_logging = false;
           } else {
             m_prevF2Press = now;
             now_log = time(0);
             log_time = localtime(&now_log);
-            startCounting = true;
             mango_logging = true;
           }
       } 
