@@ -37,7 +37,6 @@ namespace dxvk::hud {
     
     std::string m_fpsString;
     bool mango_logging = false;
-    bool startCounting = false;
     time_t lastPress = time(0);
     char const* logging;
     
