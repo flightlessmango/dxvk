@@ -36,11 +36,9 @@ namespace dxvk::hud {
     const HudElements m_elements;
     
     std::string m_fpsString;
-    std::string m_cpuUtilizationString;
     bool mango_logging = false;
     time_t lastPress = time(0);
-    char const* logging = getenv("DXVK_LOG_TO_FILE");
-    int64_t fps;
+    char const* logging;
     
     TimePoint m_prevFpsUpdate;
     TimePoint m_prevFtgUpdate;
