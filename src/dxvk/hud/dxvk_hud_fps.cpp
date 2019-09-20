@@ -55,8 +55,10 @@ namespace dxvk::hud {
     }
     if (elapsedFps.count() >= UpdateInterval) {
     // Update FPS string
-      int cpuLoad = int(GetCPULoad() * 100);
-      m_cpuUtilizationString = str::format("CPU:   ", cpuLoad, "%");
+      coreCounting();
+      dxvk::thread([this] () { getCpuUsage();});
+      updateCpuStrings();
+      m_cpuUtilizationString = str::format(cpuArray[0].output);
       const int64_t fps = (10'000'000ll * m_frameCount) / elapsedFps.count();
       m_fpsString = str::format("FPS: ", fps / 10, ".", fps % 10);
       
@@ -65,7 +67,7 @@ namespace dxvk::hud {
       logging = getenv("DXVK_LOG_TO_FILE");
       if (!logging == 0){
         if (mango_logging){
-          printToLog(logging, str::format(fps / 10, ".", fps % 10), str::format(cpuLoad), to_string(gpuLoad), log_time);
+          printToLog(logging, str::format(fps / 10, ".", fps % 10), str::format(cpuArray[0].value), to_string(gpuLoad), log_time);
         }
       }
     }
