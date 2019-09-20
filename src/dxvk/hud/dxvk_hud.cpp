@@ -7,7 +7,7 @@ namespace dxvk::hud {
   float Hud::offset_x_float = 0;
   float Hud::offset_y_float = 0;
   bool show_hud = true;
-  time_t lastPress;
+  int lastPress;
   
   Hud::Hud(
     const Rc<DxvkDevice>& device,
@@ -97,8 +97,8 @@ namespace dxvk::hud {
   void Hud::renderHudElements(const Rc<DxvkContext>& ctx) {
     if(GetAsyncKeyState(VK_F12) & 0x8000)
     {
-      if (time(0) - lastPress > 0){
-        lastPress = time(0);
+      if (GetTickCount() - lastPress > 500){
+        lastPress = GetTickCount();
         if (show_hud){
           show_hud = false;
         } else {
