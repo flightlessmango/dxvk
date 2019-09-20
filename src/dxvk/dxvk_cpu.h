@@ -1,172 +1,27 @@
-#include <cmath>
-#include <iomanip>
-#include <array>
-#include <vector>
-#include <algorithm>
-#include <iterator>
-#include <thread>
-#include <sstream>
-#include <fstream>
-using namespace std;
+#include <windows.h>
 
-const int NUM_CPU_STATES = 10;
+static float CalculateCPULoad(unsigned long long idleTicks, unsigned long long totalTicks)
+{
+   static unsigned long long _previousTotalTicks = 0;
+   static unsigned long long _previousIdleTicks = 0;
 
-struct Cpus{
-  size_t num;
-  string name;
-  float value;
-  string output;
-};
+   unsigned long long totalTicksSinceLastTime = totalTicks-_previousTotalTicks;
+   unsigned long long idleTicksSinceLastTime  = idleTicks-_previousIdleTicks;
 
-size_t numCpuCores = dxvk::thread::hardware_concurrency();
-size_t arraySize = numCpuCores + 1;
-std::vector<Cpus> cpuArray;
+   float ret = 1.0f-((totalTicksSinceLastTime > 0) ? ((float)idleTicksSinceLastTime)/totalTicksSinceLastTime : 0);
 
-void coreCounting(){
-  cpuArray.push_back({0, "CPU:"});
-  for (size_t i = 0; i < arraySize; i++) {
-    size_t offset = i;
-    stringstream ss;
-    ss << "CPU" << offset << ":";
-    string cpuNameString = ss.str();
-    cpuArray.push_back({i+1 , cpuNameString});
-  }
+   _previousTotalTicks = totalTicks;
+   _previousIdleTicks  = idleTicks;
+   return ret;
 }
 
-std::string m_cpuUtilizationString;
+static unsigned long long FileTimeToInt64(const FILETIME & ft) {return (((unsigned long long)(ft.dwHighDateTime))<<32)|((unsigned long long)ft.dwLowDateTime);}
 
-enum CPUStates
+// Returns 1.0f for "CPU fully pinned", 0.0f for "CPU idle", or somewhere in between
+// You'll need to call this at regular intervals, since it measures the load between
+// the previous call and the current one.  Returns -1.0 on error.
+float GetCPULoad()
 {
-	S_USER = 0,
-	S_NICE,
-	S_SYSTEM,
-	S_IDLE,
-	S_IOWAIT,
-	S_IRQ,
-	S_SOFTIRQ,
-	S_STEAL,
-	S_GUEST,
-	S_GUEST_NICE
-};
-
-typedef struct CPUData
-{
-	std::string cpu;
-	size_t times[NUM_CPU_STATES];
-} CPUData;
-
-void ReadStatsCPU(std::vector<CPUData> & entries)
-{
-	std::ifstream fileStat("/proc/stat");
-
-	std::string line;
-
-	const std::string STR_CPU("cpu");
-	const std::size_t LEN_STR_CPU = STR_CPU.size();
-	const std::string STR_TOT("tot");
-
-	while(std::getline(fileStat, line))
-	{
-		// cpu stats line found
-		if(!line.compare(0, LEN_STR_CPU, STR_CPU))
-		{
-			std::istringstream ss(line);
-
-			// store entry
-			entries.emplace_back(CPUData());
-			CPUData & entry = entries.back();
-
-			// read cpu label
-			ss >> entry.cpu;
-
-			if(entry.cpu.size() > LEN_STR_CPU)
-				entry.cpu.erase(0, LEN_STR_CPU);
-			else
-				entry.cpu = STR_TOT;
-
-			// read times
-			for(int i = 0; i < NUM_CPU_STATES; ++i)
-				ss >> entry.times[i];
-		}
-	}
+   FILETIME idleTime, kernelTime, userTime;
+   return GetSystemTimes(&idleTime, &kernelTime, &userTime) ? CalculateCPULoad(FileTimeToInt64(idleTime), FileTimeToInt64(kernelTime)+FileTimeToInt64(userTime)) : -1.0f;
 }
-
-size_t GetIdleTime(const CPUData & e)
-{
-	return	e.times[S_IDLE] +
-			e.times[S_IOWAIT];
-}
-
-size_t GetActiveTime(const CPUData & e)
-{
-	return	e.times[S_USER] +
-			e.times[S_NICE] +
-			e.times[S_SYSTEM] +
-			e.times[S_IRQ] +
-			e.times[S_SOFTIRQ] +
-			e.times[S_STEAL] +
-			e.times[S_GUEST] +
-			e.times[S_GUEST_NICE];
-}
-
-void PrintStats(const std::vector<CPUData> & entries1, const std::vector<CPUData> & entries2)
-{
-	const size_t NUM_ENTRIES = entries1.size();
-
-	for(size_t i = 0; i < NUM_ENTRIES; ++i)
-	{
-		const CPUData & e1 = entries1[i];
-		const CPUData & e2 = entries2[i];
-
-		const float ACTIVE_TIME	= static_cast<float>(GetActiveTime(e2) - GetActiveTime(e1));
-		const float IDLE_TIME	= static_cast<float>(GetIdleTime(e2) - GetIdleTime(e1));
-		const float TOTAL_TIME	= ACTIVE_TIME + IDLE_TIME;
-
-    cpuArray[i].value = (truncf(100.f * ACTIVE_TIME / TOTAL_TIME) * 10 / 10);
-	}
-}
-
-int getCpuUsage()
-{
-	std::vector<CPUData> entries1;
-	std::vector<CPUData> entries2;
-
-	// snapshot 1
-	ReadStatsCPU(entries1);
-
-	// 100ms pause
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-	// snapshot 2
-	ReadStatsCPU(entries2);
-
-	// print output
-	PrintStats(entries1, entries2);
-
-	return 0;
-}
-
-
-void updateCpuStrings(){
-  for (size_t i = 0; i < arraySize; i++) {
-    size_t spacing = 10;
-    string value = to_string(cpuArray[i].value);
-    value.erase( value.find_last_not_of('0') + 1, std::string::npos );
-    size_t correctionValue = (spacing - cpuArray[i].name.length()) - value.length();
-    string correction = "";
-    for (size_t i = 0; i < correctionValue; i++) {
-          correction.append(" ");
-        }
-        stringstream ss;
-        if (i < 11) {
-          if (i == 0) {
-            ss << cpuArray[i].name << correction << cpuArray[i].value << "%";
-          } else {
-            ss << cpuArray[i].name << correction << cpuArray[i].value << "%";
-          }
-        } else {
-          ss << cpuArray[i].name << correction << cpuArray[i].value << "%";
-        }
-        cpuArray[i].output = ss.str();
-      }
-    }
