@@ -8,12 +8,7 @@
 using namespace std;
 time_t now_log = time(0);
 tm *log_time = localtime(&now_log);
-
-void printToLog(std::string file, string m_fpsString, string cpuUtil, string gpuUtil, tm *log_time) {
-  string date = to_string(log_time->tm_year + 1900) + "-" + to_string(1 + log_time->tm_mon) + "-" + to_string(log_time->tm_mday) + "_" + to_string(1 + log_time->tm_hour) + "-" + to_string(1 + log_time->tm_min) + "-" + to_string(1 + log_time->tm_sec);
-  fstream f(file + "_" + date, f.out | f.app);
-  f << m_fpsString << "," << cpuUtil << "," << gpuUtil << endl;
-}
+fstream f;
 
 namespace dxvk::hud {
   
@@ -21,7 +16,8 @@ namespace dxvk::hud {
   : m_elements  (elements),
     m_fpsString ("FPS: "),
     m_prevFpsUpdate(Clock::now()),
-    m_prevFtgUpdate(Clock::now()) {
+    m_prevFtgUpdate(Clock::now()),
+    m_prevLogUpdate(Clock::now()) {
   }
   
   
@@ -36,6 +32,7 @@ namespace dxvk::hud {
     TimePoint now = Clock::now();
     TimeDiff elapsedFps = std::chrono::duration_cast<TimeDiff>(now - m_prevFpsUpdate);
     TimeDiff elapsedFtg = std::chrono::duration_cast<TimeDiff>(now - m_prevFtgUpdate);
+    TimeDiff elapsedLog = std::chrono::duration_cast<TimeDiff>(now - m_prevLogUpdate);
     m_prevFtgUpdate = now;
 
     if(GetAsyncKeyState(VK_F2) & 0x8000)
@@ -45,31 +42,38 @@ namespace dxvk::hud {
           if (mango_logging){
             m_prevF2Press = now;
             mango_logging = false;
+            f.close();
           } else {
             m_prevF2Press = now;
             now_log = time(0);
             log_time = localtime(&now_log);
             mango_logging = true;
+            string date = to_string(log_time->tm_year + 1900) + "-" + to_string(1 + log_time->tm_mon) + "-" + to_string(log_time->tm_mday) + "_" + to_string(1 + log_time->tm_hour) + "-" + to_string(1 + log_time->tm_min) + "-" + to_string(1 + log_time->tm_sec);
+            f.open(logging + "_" + date, f.out | f.app);
           }
       } 
     }
+    
+    if (elapsedLog.count() >= LogUpdateInterval) {
+      fps = (10'000'000ll * m_frameCount) / elapsedFps.count();
+      if (!logging.empty()){
+        if (mango_logging){
+          f << str::format(fps / 10, ".", fps % 10) << "," << str::format(cpuArray[0].value) << "," << to_string(gpuLoad) << endl;
+        }
+      }
+      m_prevLogUpdate = now;
+    }
+    
     if (elapsedFps.count() >= UpdateInterval) {
     // Update FPS string
       coreCounting();
       dxvk::thread([this] () { getCpuUsage();});
       updateCpuStrings();
       m_cpuUtilizationString = str::format(cpuArray[0].output);
-      const int64_t fps = (10'000'000ll * m_frameCount) / elapsedFps.count();
       m_fpsString = str::format("FPS: ", fps / 10, ".", fps % 10);
       
       m_prevFpsUpdate = now;
       m_frameCount = 0;
-      logging = getenv("DXVK_LOG_TO_FILE");
-      if (!logging == 0){
-        if (mango_logging){
-          printToLog(logging, str::format(fps / 10, ".", fps % 10), str::format(cpuArray[0].value), to_string(gpuLoad), log_time);
-        }
-      }
     }
     
     // Update frametime stuff
@@ -100,7 +104,7 @@ namespace dxvk::hud {
         context, renderer, position);
     }
     
-    if (mango_logging && !logging == 0) {
+    if (mango_logging && !logging.empty()) {
       this->renderLogging(context, renderer,
         { float(renderer.surfaceSize().width) - 250.0f, float(renderer.surfaceSize().height) - 20.0f });
     }
