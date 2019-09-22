@@ -17,8 +17,9 @@ namespace dxvk::hud {
     using TimeDiff  = std::chrono::microseconds;
     using TimePoint = typename Clock::time_point;
     
-    constexpr static uint32_t NumDataPoints  = 300;
-    constexpr static int64_t  UpdateInterval = 500'000;
+    constexpr static uint32_t NumDataPoints     = 300;
+    constexpr static int64_t  UpdateInterval    = 500'000;
+    constexpr static int64_t  LogUpdateInterval = 100'000;
   public:
     
     HudFps(HudElements elements);
@@ -38,10 +39,12 @@ namespace dxvk::hud {
     std::string m_fpsString;
     bool mango_logging = false;
     time_t lastPress = time(0);
-    char const* logging;
+    std::string logging = getenv("DXVK_LOG_TO_FILE");
+    int64_t fps;
     
     TimePoint m_prevFpsUpdate;
     TimePoint m_prevFtgUpdate;
+    TimePoint m_prevLogUpdate;
     TimePoint m_prevF2Press;
     TimeDiff  elapsedF2;
     int64_t   m_frameCount = 0;
