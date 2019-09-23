@@ -10,6 +10,14 @@ time_t now_log = time(0);
 tm *log_time = localtime(&now_log);
 fstream f;
 
+struct logData{
+  float fps;
+  float cpu;
+  uint64_t gpu;
+};
+
+std::vector<logData> logArray;
+
 namespace dxvk::hud {
   
   HudFps::HudFps(HudElements elements)
@@ -42,7 +50,11 @@ namespace dxvk::hud {
           if (mango_logging){
             m_prevF2Press = now;
             mango_logging = false;
+            for (size_t i = 0; i < logArray.size(); i++) {
+              f << logArray[i].fps << "," << logArray[i].cpu << "," << logArray[i].gpu << endl;
+            }
             f.close();
+            logArray.clear();
           } else {
             m_prevF2Press = now;
             now_log = time(0);
@@ -51,14 +63,14 @@ namespace dxvk::hud {
             string date = to_string(log_time->tm_year + 1900) + "-" + to_string(1 + log_time->tm_mon) + "-" + to_string(log_time->tm_mday) + "_" + to_string(1 + log_time->tm_hour) + "-" + to_string(1 + log_time->tm_min) + "-" + to_string(1 + log_time->tm_sec);
             f.open(logging + "_" + date, f.out | f.app);
           }
-      } 
-    }
+        } 
+      }
     
     if (elapsedLog.count() >= LogUpdateInterval) {
       fps = (10'000'000ll * m_frameCount) / elapsedFps.count();
       if (!logging.empty()){
         if (mango_logging){
-          f << str::format(fps / 10, ".", fps % 10) << "," << str::format(cpuArray[0].value) << "," << to_string(gpuLoad) << endl;
+          logArray.push_back({float(fps / 10 + (float(fps % 10) / 10)), cpuArray[0].value, gpuLoad});
         }
       }
       m_prevLogUpdate = now;
