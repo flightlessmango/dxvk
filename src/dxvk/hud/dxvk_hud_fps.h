@@ -39,7 +39,7 @@ namespace dxvk::hud {
     std::string m_fpsString;
     bool mango_logging = false;
     time_t lastPress = time(0);
-    std::string logging = getenv("DXVK_LOG_TO_FILE");
+    std::string logging = env::getEnvVar("DXVK_LOG_TO_FILE");
     int64_t fps;
     
     TimePoint m_prevFpsUpdate;
